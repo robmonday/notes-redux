@@ -1,3 +1,5 @@
+import { createSlice } from '@reduxjs/toolkit'
+
 const initialState = [
   {
     content: 'reducer defines how redux store works',
@@ -11,47 +13,39 @@ const initialState = [
   },
 ]
 
-const noteReducer = (state = initialState, action) => {
-  console.log('ACTION: ', action)
-  switch(action.type) {
-    case 'NEW_NOTE':
-      return [...state, action.data]
-    case 'TOGGLE_IMPORTANCE': {
-      const id = action.data.id
-      const noteToChange = state.find(n => n.id === id)
-      const changedNote = {
-        ...noteToChange,
-        important: !noteToChange.important
-      }
-      return state.map(note => 
-        note.id !== id ? note : changedNote
-      )
-    }
-    default:
-      return state
-  }
-}
-
 const generateId = () => {
   return Number((Math.random() * 1000000).toFixed())
 }
 
-export const createNote = (content) => {
-  return {
-    type: 'NEW_NOTE',
-    data: {
-      content,
-      important: false,
-      id: generateId()
+// createSlice() returns an object with 
+// -- an actions property that contains action creator functions
+// -- a reducer property that contains the reducer function that gets put into configureStore()
+
+const noteSlice = createSlice({
+  name: 'notes',
+  initialState,
+  reducers: {
+    createNote(state, action) {
+      const content = action.payload
+      state.push({
+        content,
+        important: false,
+        id: generateId(),
+      })
+    },
+    toggleImportanceOf(state, action) {
+      const id = action.payload
+      const noteToChange = state.find(n => n.id === id)
+      const changedNote = { 
+        ...noteToChange, 
+        important: !noteToChange.important 
+      }
+      return state.map(note =>
+        note.id !== id ? note : changedNote 
+      )     
     }
-  }
-}
+  },
+})
 
-export const toggleImportanceOf = id => {
-  return {
-    type: 'TOGGLE_IMPORTANCE',
-    data: { id }
-  }
-}
-
-export default noteReducer
+export const { createNote, toggleImportanceOf } = noteSlice.actions
+export default noteSlice.reducer
